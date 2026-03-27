@@ -5,6 +5,7 @@
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
 module hyperbus_cfg_regs #(
+    parameter int unsigned  AxiAddrWidth  = -1,
     parameter int unsigned  NumChips        = -1,
     parameter int unsigned  NumPhys         = -1,
     parameter int unsigned  RegAddrWidth    = -1,
@@ -56,6 +57,7 @@ module hyperbus_cfg_regs #(
     always_comb begin : proc_comb_read
         reg_data_t [NumRegs-1:0] rfield;
         reg_rsp_o.rdata = '0;
+        rfield = '0;
         if (sel_reg_mapped) begin
             rfield = {
                 crange_q,
@@ -116,12 +118,22 @@ module hyperbus_cfg_regs #(
     `FFARN(cfg_q, cfg_d, RstCfg, clk_i, rst_ni);
     `FFARN(crange_q, crange_d, crange_rstval, clk_i, rst_ni);
 
+    typedef logic [my_bus_pkg::AxiAddrWidth-1:0] addr_t;
+    typedef logic [$clog2(NumChips)-1:0] idx_t; 
+    typedef struct packed {
+      idx_t  idx;
+      addr_t start_addr;
+      addr_t end_addr;
+    } tmp_rule_t;
+    tmp_rule_t  [NumChips-1:0] tmp_chip_rules_o;
+    assign chip_rules_o = tmp_chip_rules_o;
+
     // Outputs
     assign cfg_o  = cfg_q;
     for (genvar i = 0; unsigned'(i) < NumChips; ++i) begin : gen_crange_out
-        assign chip_rules_o[i].idx         = unsigned'(i);   // No overlap: keep indices sequential
-        assign chip_rules_o[i].start_addr  = crange_q[i][0];
-        assign chip_rules_o[i].end_addr    = crange_q[i][1];
+        assign tmp_chip_rules_o[i].idx         = unsigned'(i);   // No overlap: keep indices sequential
+        assign tmp_chip_rules_o[i].start_addr  = crange_q[i][0];
+        assign tmp_chip_rules_o[i].end_addr    = crange_q[i][1];
     end
 
     // pragma translate_off

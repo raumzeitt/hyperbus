@@ -117,6 +117,7 @@ module hyperbus #(
 
     // Config register File
     hyperbus_cfg_regs #(
+        .AxiAddrWidth   ( AxiAddrWidth  ),
         .NumChips       ( NumChips      ),
         .NumPhys        ( NumPhys       ),
         .RegAddrWidth   ( RegAddrWidth  ),

@@ -189,7 +189,7 @@ module hyperbus_axi #(
         .mst_resp_i ( fifo_out_rsp  )
    );
 
-
+    /*
     // Block unsupported atomics
     axi_atop_filter #(
         .AxiIdWidth         ( AxiIdWidth    ),
@@ -220,6 +220,9 @@ module hyperbus_axi #(
         .mst_req_o  ( ser_out_req   ),
         .mst_resp_i ( ser_out_rsp   )
     );
+   */
+    always_comb fifo_out_rsp = ser_out_rsp;
+    always_comb ser_out_req = fifo_out_req;
 
     // Round-robin-arbitrate between AR and AW channels (HyperBus is simplex)
     assign ser_out_req_ar.addr  = ser_out_req.ar.addr;
